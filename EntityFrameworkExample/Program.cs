@@ -1,7 +1,14 @@
 using Microsoft.EntityFrameworkCore;
-using EntityFrameworkExample.Entities;
 using EntityFrameworkExample;
-using Microsoft.EntityFrameworkCore.Diagnostics;
+using EntityFrameworkExample.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Server.IISIntegration;
+using System.Configuration;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.IISIntegration;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.Extensions.Configuration;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,20 +25,40 @@ builder.Services
     .AddDbContext<EntityFrameworkExampleContext>(opt =>
         opt.UseSqlServer(connectionString));
 
-var app = builder.Build();
+builder.Services.AddScoped<IUserSession, UserSession>();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+builder.Services.AddAuthentication(options =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-    app.UseDeveloperExceptionPage();
-}
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = IISDefaults.AuthenticationScheme;
+})
+.AddCookie(
+    cookieOptions =>
+    {
+        cookieOptions.Cookie.Name = $"EntityFrameworkExample.{Configuration["ASPNETCORE_ENVIRONMENT"]}";
+        cookieOptions.Cookie.SecurePolicy = Configuration["ASPNETCORE_ENVIRONMENT"] == "Development"
+            ? CookieSecurePolicy.SameAsRequest
+            : CookieSecurePolicy.Always;
+        cookieOptions.Cookie.HttpOnly = true;
+    });
 
-app.UseHttpsRedirection();
 
-app.UseAuthorization();
+    var app = builder.Build();
 
-app.MapControllers();
+    // Configure the HTTP request pipeline.
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+        app.UseDeveloperExceptionPage();
+    }
 
-app.Run();
+    app.UseHttpsRedirection();
+
+    app.UseAuthorization();
+
+    app.MapControllers();
+
+    app.Run();
