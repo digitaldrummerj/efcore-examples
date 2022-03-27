@@ -1,11 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EntityFrameworkExample.Entities;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EntityFrameworkExample.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+
     public class PostController : ControllerBase
     {
         private readonly EntityFrameworkExampleContext _context;

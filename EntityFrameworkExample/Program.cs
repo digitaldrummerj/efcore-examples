@@ -1,18 +1,18 @@
 using Microsoft.EntityFrameworkCore;
 using EntityFrameworkExample;
 using EntityFrameworkExample.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Server.IISIntegration;
-using System.Configuration;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.IISIntegration;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.Extensions.Configuration;
-
+using Microsoft.AspNetCore.Authentication.Negotiate;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
+    .AddNegotiate();
+
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = options.DefaultPolicy;
+});
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -29,36 +29,21 @@ builder.Services.AddScoped<IUserSession, UserSession>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-builder.Services.AddAuthentication(options =>
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
 {
-    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = IISDefaults.AuthenticationScheme;
-})
-.AddCookie(
-    cookieOptions =>
-    {
-        cookieOptions.Cookie.Name = $"EntityFrameworkExample.{Configuration["ASPNETCORE_ENVIRONMENT"]}";
-        cookieOptions.Cookie.SecurePolicy = Configuration["ASPNETCORE_ENVIRONMENT"] == "Development"
-            ? CookieSecurePolicy.SameAsRequest
-            : CookieSecurePolicy.Always;
-        cookieOptions.Cookie.HttpOnly = true;
-    });
+    app.UseSwagger();
+    app.UseSwaggerUI();
+    app.UseDeveloperExceptionPage();
+}
 
+app.UseHttpsRedirection();
 
-    var app = builder.Build();
+app.UseAuthentication();
+app.UseAuthorization();
 
-    // Configure the HTTP request pipeline.
-    if (app.Environment.IsDevelopment())
-    {
-        app.UseSwagger();
-        app.UseSwaggerUI();
-        app.UseDeveloperExceptionPage();
-    }
+app.MapControllers();
 
-    app.UseHttpsRedirection();
-
-    app.UseAuthorization();
-
-    app.MapControllers();
-
-    app.Run();
+app.Run();
