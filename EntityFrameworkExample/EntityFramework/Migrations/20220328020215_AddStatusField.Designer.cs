@@ -4,6 +4,7 @@ using EntityFrameworkExample;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EntityFrameworkExample.EntityFramework.Migrations
 {
     [DbContext(typeof(EntityFrameworkExampleContext))]
-    partial class EntityFrameworkExampleContextModelSnapshot : ModelSnapshot
+    [Migration("20220328020215_AddStatusField")]
+    partial class AddStatusField
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

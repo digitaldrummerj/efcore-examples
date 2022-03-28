@@ -12,6 +12,10 @@ public class Blog : EntityBase
     public string Name { get; set; }
 
     [Required]
+    [MaxLength(25)]
+    public Status Status { get; set; }
+
+    [Required]
     [MaxLength(2048)]
 
     public string Url { get; set; }
