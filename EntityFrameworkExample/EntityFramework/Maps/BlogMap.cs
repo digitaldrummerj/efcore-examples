@@ -4,11 +4,14 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EntityFrameworkExample.Maps;
 
-public class BlogMap : EntityMapBase<Blog>
+public class BlogMap : IEntityTypeConfiguration<Blog>
 {
-    public override void Configure(EntityTypeBuilder<Blog> builder)
+    public void Configure(EntityTypeBuilder<Blog> builder)
     {
-        base.Configure(builder);
+        builder.HasQueryFilter(t => t.IsDeleted == false);
+
+        builder.HasIndex(t => t.Url)
+            .IsUnique();
 
         builder.Property(s => s.Status)
             .HasDefaultValue(Status.Draft)

@@ -1,12 +1,20 @@
 using EntityFrameworkExample.Entities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EntityFrameworkExample.Maps;
 
-public class PostMap : EntityMapBase<Post>
+public class PostMap : IEntityTypeConfiguration<Post>
 {
-    public override void Configure(EntityTypeBuilder<Post> builder)
+    public void Configure(EntityTypeBuilder<Post> builder)
     {
-        base.Configure(builder);
+        builder.HasQueryFilter(t => t.IsDeleted == false);
+
+        builder.HasIndex(t => t.Title);
+
+        builder.HasIndex(t => t.Url)
+            .IsUnique();
+
+        builder.HasIndex(t => new { t.Title, t.Url });
     }
 }
